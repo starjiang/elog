@@ -1,6 +1,6 @@
 # elog high perfermance logger lib for golang
-全局logger
-=====
+global logger model
+==================
 <pre>
 func main() {
 	flag.Parse()
@@ -15,8 +15,8 @@ func main() {
 </pre>
 ./example_elog -logToStderr -logLevel=INFO -logFlushTime=3 -logPath=./
 
-LoggerHandler
-=======
+LoggerHandler model
+===================
 <pre>
 type TestLogHandler struct {
 }
