@@ -53,6 +53,7 @@ func NewEasyLogger(logLevel string, logToStderr bool, flushTime int, writer Easy
 	logger.flushTime = flushTime
 	logger.writer = writer
 	logger.depth = LOG_DEPTH_HANDLER
+	go logger.flushDaemon()
 	return logger
 }
 
@@ -248,7 +249,7 @@ func (el *EasyLogger) Printf(level int, format string, args ...interface{}) {
 	}
 }
 
-func (el *EasyLogger) flush() {
+func (el *EasyLogger) Flush() {
 	el.mutex.Lock()
 	el.writer.Flush()
 	el.mutex.Unlock()
@@ -285,7 +286,7 @@ func (el *EasyLogger) Errorf(format string, args ...interface{}) {
 
 func (el *EasyLogger) flushDaemon() {
 	for _ = range time.NewTicker(time.Second * time.Duration(el.flushTime)).C {
-		el.flush()
+		el.Flush()
 	}
 }
 
@@ -321,7 +322,7 @@ func Errorf(format string, args ...interface{}) {
 }
 
 func Flush() {
-	logger.flush()
+	logger.Flush()
 }
 
 func getTimeNow() int64 {
