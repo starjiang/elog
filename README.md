@@ -1,18 +1,10 @@
 # elog
-package main
-
-import (
-	"flag"
-	"time"
-
-	"github.com/starjiang/elog"
-)
-
+<pre>
 func main() {
 	flag.Parse()
 	defer elog.Flush()
 	elog.Info("hello","world")
-  elog.Infof("hello %s","world")  
+  	elog.Infof("hello %s","world")  
 }
-
+</pre>
 ./main -logToStderr -logLevel=INFO -logFlushTime=3 -logPath=./
