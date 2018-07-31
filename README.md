@@ -1,4 +1,4 @@
-# elog
+# elog high perfermance logger lib for golang
 <pre>
 func main() {
 	flag.Parse()
