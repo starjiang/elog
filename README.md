@@ -1,4 +1,6 @@
 # elog high perfermance logger lib for golang
+全局logger
+=====
 <pre>
 func main() {
 	flag.Parse()
@@ -13,7 +15,7 @@ func main() {
 </pre>
 ./example_elog -logToStderr -logLevel=INFO -logFlushTime=3 -logPath=./
 
-Handler
+LoggerHandler
 =======
 <pre>
 type TestLogHandler struct {
