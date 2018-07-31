@@ -21,15 +21,18 @@ const (
 	LOG_MAX_FILE_SIZE       = 1024 * 1024 * 1024
 	LOG_MAX_BUFFER_SIZE     = 1024 * 1024
 	LOG_MAX_ROTATE_FILE_NUM = 10
+	LOG_DEPTH_GLOBAL        = 4
+	LOG_DEPTH_HANDLER       = 3
 )
 
 func init() {
 	var logPath string
 	flag.BoolVar(&logger.logToStderr, "logToStderr", false, "log to stderr,default false")
-	flag.StringVar(&logPath, "logPath", "./", "log path,default log to current directory")
 	flag.IntVar(&logger.flushTime, "logFlushTime", 3, "log flush time interval,default 3 seconds")
 	flag.StringVar(&logger.logLevel, "logLevel", "INFO", "log level[DEBUG,INFO,WARN,ERROR],default INFO level")
+	flag.StringVar(&logPath, "logPath", "./", "log path,default log to current directory")
 	logger.writer = NewEasyFileHandler(logPath, LOG_MAX_BUFFER_SIZE)
+	logger.depth = LOG_DEPTH_GLOBAL
 	go logger.flushDaemon()
 }
 
@@ -39,6 +42,7 @@ type EasyLogger struct {
 	flushTime   int
 	logLevel    string
 	writer      EasyLogHandler
+	depth       int
 }
 
 func NewEasyLogger(logLevel string, logToStderr bool, flushTime int, writer EasyLogHandler) *EasyLogger {
@@ -48,6 +52,7 @@ func NewEasyLogger(logLevel string, logToStderr bool, flushTime int, writer Easy
 	logger.logToStderr = logToStderr
 	logger.flushTime = flushTime
 	logger.writer = writer
+	logger.depth = LOG_DEPTH_HANDLER
 	return logger
 }
 
@@ -186,7 +191,7 @@ func getLogLevelString(level int) string {
 
 func (el *EasyLogger) getHeader(level int, writer io.Writer) {
 
-	_, file, line, ok := runtime.Caller(4)
+	_, file, line, ok := runtime.Caller(el.depth)
 
 	if !ok {
 		file = "???"
@@ -205,8 +210,8 @@ func (el *EasyLogger) getHeader(level int, writer io.Writer) {
 
 func (el *EasyLogger) Print(level int, args ...interface{}) {
 
-	if !flag.Parsed() {
-		os.Stderr.Write([]byte("ERROR: logging before flag.Parse: \n"))
+	if el.depth == LOG_DEPTH_GLOBAL && !flag.Parsed() {
+		os.Stderr.Write([]byte("ERROR: logging before flag.Parse\n"))
 		return
 	}
 	if level < getLogLevelInt(el.logLevel) {
@@ -223,8 +228,8 @@ func (el *EasyLogger) Print(level int, args ...interface{}) {
 
 func (el *EasyLogger) Printf(level int, format string, args ...interface{}) {
 
-	if !flag.Parsed() {
-		os.Stderr.Write([]byte("ERROR: logging before flag.Parse: \n"))
+	if el.depth == LOG_DEPTH_GLOBAL && !flag.Parsed() {
+		os.Stderr.Write([]byte("ERROR: logging before flag.Parse\n"))
 		return
 	}
 	if level < getLogLevelInt(el.logLevel) {
