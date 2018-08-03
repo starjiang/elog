@@ -37,3 +37,30 @@ func main() {
 	log.Info("hello", "world")
 }
 </pre>
+elog config
+=================
+<pre>
+-logFlushTime int
+    	log flush time interval,default 3 seconds (default 3)
+  -logLevel string
+    	log level[DEBUG,INFO,WARN,ERROR,NONE],default INFO level (default "INFO")
+  -logPath string
+    	log path,default log to current directory (default "./")
+  -logToStderr
+    	log to stderr,default false
+</pre>
+elog rotate file rules
+======================
+<pre>
+1.when file size reach to 1GB,the logger file will be rotate
+2.rotate files max num is 10
+</pre>
+elog high performance
+======================
+<pre>
+log to cache buffer then flush to file
+cache buffer size is 1M
+default flush time 3 seconds,-logFlushTime can change flush time interval
+if want close log outputing,-logLevel=NONE can close log outputing
+</pre>
+
