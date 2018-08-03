@@ -336,6 +336,13 @@ func Errorf(format string, args ...interface{}) {
 	logger.Errorf(format, args...)
 }
 
+func Println(args ...interface{}) {
+	logger.Info(args...)
+}
+func Printf(format string, args ...interface{}) {
+	logger.Infof(format, args...)
+}
+
 func Flush() {
 	logger.Flush()
 }
