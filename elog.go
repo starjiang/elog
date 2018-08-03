@@ -224,7 +224,7 @@ func (el *EasyLogger) getHeader(level int, writer io.Writer) {
 	}
 }
 
-func (el *EasyLogger) Print(level int, args ...interface{}) {
+func (el *EasyLogger) output(level int, args ...interface{}) {
 
 	if el.depth == LOG_DEPTH_GLOBAL && !flag.Parsed() {
 		os.Stderr.Write([]byte("ERROR: logging before flag.Parse\n"))
@@ -242,7 +242,7 @@ func (el *EasyLogger) Print(level int, args ...interface{}) {
 	}
 }
 
-func (el *EasyLogger) Printf(level int, format string, args ...interface{}) {
+func (el *EasyLogger) outputf(level int, format string, args ...interface{}) {
 
 	if el.depth == LOG_DEPTH_GLOBAL && !flag.Parsed() {
 		os.Stderr.Write([]byte("ERROR: logging before flag.Parse\n"))
@@ -271,32 +271,40 @@ func (el *EasyLogger) Flush() {
 }
 
 func (el *EasyLogger) Debug(args ...interface{}) {
-	el.Print(LOG_LEVEL_DEBUG, args...)
+	el.output(LOG_LEVEL_DEBUG, args...)
 }
 func (el *EasyLogger) Debugf(format string, args ...interface{}) {
-	el.Printf(LOG_LEVEL_DEBUG, format, args...)
+	el.outputf(LOG_LEVEL_DEBUG, format, args...)
 }
 
 func (el *EasyLogger) Info(args ...interface{}) {
-	el.Print(LOG_LEVEL_INFO, args...)
+	el.output(LOG_LEVEL_INFO, args...)
 }
 func (el *EasyLogger) Infof(format string, args ...interface{}) {
-	el.Printf(LOG_LEVEL_INFO, format, args...)
+	el.outputf(LOG_LEVEL_INFO, format, args...)
 }
 
 func (el *EasyLogger) Warn(args ...interface{}) {
-	el.Print(LOG_LEVEL_WARN, args...)
+	el.output(LOG_LEVEL_WARN, args...)
 }
 func (el *EasyLogger) Warnf(format string, args ...interface{}) {
-	el.Printf(LOG_LEVEL_WARN, format, args...)
+	el.outputf(LOG_LEVEL_WARN, format, args...)
 }
 
 func (el *EasyLogger) Error(args ...interface{}) {
-	el.Print(LOG_LEVEL_ERROR, args...)
+	el.output(LOG_LEVEL_ERROR, args...)
 }
 
 func (el *EasyLogger) Errorf(format string, args ...interface{}) {
-	el.Printf(LOG_LEVEL_ERROR, format, args...)
+	el.outputf(LOG_LEVEL_ERROR, format, args...)
+}
+
+func (el *EasyLogger) Println(args ...interface{}) {
+	el.output(LOG_LEVEL_INFO, args...)
+}
+
+func (el *EasyLogger) Printf(format string, args ...interface{}) {
+	el.outputf(LOG_LEVEL_INFO, format, args...)
 }
 
 func (el *EasyLogger) flushDaemon() {
@@ -337,10 +345,10 @@ func Errorf(format string, args ...interface{}) {
 }
 
 func Println(args ...interface{}) {
-	logger.Info(args...)
+	logger.Println(args...)
 }
 func Printf(format string, args ...interface{}) {
-	logger.Infof(format, args...)
+	logger.Printf(format, args...)
 }
 
 func Flush() {
