@@ -1,3 +1,3 @@
-module github.com/starjiang/elog
+module elog
 
 go 1.12
