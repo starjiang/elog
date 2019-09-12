@@ -26,12 +26,16 @@ const (
 	LOG_DEPTH_HANDLER       = 3
 )
 
+var logPath string
+
 func init() {
-	var logPath string
 	flag.BoolVar(&logger.logToStderr, "logToStderr", false, "log to stderr,default false")
 	flag.IntVar(&logger.flushTime, "logFlushTime", 3, "log flush time interval,default 3 seconds")
 	flag.StringVar(&logger.logLevel, "logLevel", "INFO", "log level[DEBUG,INFO,WARN,ERROR,NONE],default INFO level")
-	flag.StringVar(&logPath, "logPath", "./", "log path,default log to current directory")
+	flag.StringVar(&logPath, "logPath1", "./", "log path,default log to current directory")
+	if !flag.Parsed() {
+		flag.Parse()
+	}
 	logger.writer = NewEasyFileHandler(logPath, LOG_MAX_BUFFER_SIZE)
 	logger.depth = LOG_DEPTH_GLOBAL
 	go logger.flushDaemon()
@@ -66,6 +70,7 @@ type EasyLogHandler interface {
 func NewEasyFileHandler(path string, bufferSize int) *EasyFileHandler {
 	handler := &EasyFileHandler{}
 	handler.path = path
+	fmt.Println(path)
 	handler.file = nil
 	handler.buffer = nil
 	handler.currentDate = ""
