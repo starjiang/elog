@@ -27,15 +27,10 @@ const (
 )
 
 func init() {
-	var logPath string
 	flag.BoolVar(&logger.logToStderr, "logToStderr", false, "log to stderr,default false")
 	flag.IntVar(&logger.flushTime, "logFlushTime", 3, "log flush time interval,default 3 seconds")
 	flag.StringVar(&logger.logLevel, "logLevel", "INFO", "log level[DEBUG,INFO,WARN,ERROR,NONE],default INFO level")
-	flag.StringVar(&logPath, "logPath", "./", "log path,default log to current directory")
-	if !flag.Parsed() {
-		flag.Parse()
-	}
-	logger.writer = NewEasyFileHandler(logPath, LOG_MAX_BUFFER_SIZE)
+	flag.StringVar(&logger.logPath, "logPath", "./", "log path,default log to current directory")
 	logger.depth = LOG_DEPTH_GLOBAL
 	go logger.flushDaemon()
 }
@@ -47,6 +42,7 @@ type EasyLogger struct {
 	logLevel    string
 	writer      EasyLogHandler
 	depth       int
+	logPath     string
 }
 
 func NewEasyLogger(logLevel string, logToStderr bool, flushTime int, writer EasyLogHandler) *EasyLogger {
@@ -238,6 +234,9 @@ func (el *EasyLogger) output(level int, args ...interface{}) {
 	}
 	el.mutex.Lock()
 	defer el.mutex.Unlock()
+	if el.writer == nil {
+		el.writer = NewEasyFileHandler(el.logPath, LOG_MAX_BUFFER_SIZE) //delay init
+	}
 	el.getHeader(level, el.writer)
 	fmt.Fprintln(el.writer, args...)
 	if el.logToStderr {
@@ -258,6 +257,10 @@ func (el *EasyLogger) outputf(level int, format string, args ...interface{}) {
 	el.mutex.Lock()
 	defer el.mutex.Unlock()
 
+	if el.writer == nil {
+		el.writer = NewEasyFileHandler(el.logPath, LOG_MAX_BUFFER_SIZE) //delay init
+	}
+
 	el.getHeader(level, el.writer)
 	fmt.Fprintf(el.writer, format, args...)
 	el.writer.Write([]byte("\n"))
@@ -269,8 +272,10 @@ func (el *EasyLogger) outputf(level int, format string, args ...interface{}) {
 
 func (el *EasyLogger) Flush() {
 	el.mutex.Lock()
-	el.writer.Flush()
-	el.mutex.Unlock()
+	defer el.mutex.Unlock()
+	if el.writer != nil {
+		el.writer.Flush()
+	}
 }
 
 func (el *EasyLogger) Debug(args ...interface{}) {
