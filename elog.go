@@ -30,7 +30,7 @@ func init() {
 	flag.BoolVar(&logger.logToStderr, "logToStderr", false, "log to stderr,default false")
 	flag.IntVar(&logger.flushTime, "logFlushTime", 3, "log flush time interval,default 3 seconds")
 	flag.StringVar(&logger.logLevel, "logLevel", "INFO", "log level[DEBUG,INFO,WARN,ERROR,NONE],default INFO level")
-	flag.StringVar(&logger.logPath, "logPath", "./", "log path,default log to current directory")
+	flag.StringVar(&logger.logPath, "logPath", "", "log path,default log to current directory")
 	logger.depth = LOG_DEPTH_GLOBAL
 	go logger.flushDaemon()
 }
@@ -106,6 +106,13 @@ func (efh *EasyFileHandler) rotateFile() error {
 	var err error
 	date := getTimeNowDate()
 
+	if efh.path == "" {
+		path, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		efh.path = path
+	}
 	if efh.currentDate != date {
 		if efh.file != nil {
 			efh.buffer.Flush()
@@ -128,7 +135,7 @@ func (efh *EasyFileHandler) rotateFile() error {
 
 		efh.file = nil
 
-		logFilePath := efh.path + "/" + appName + "-" + date + ".log." + strconv.Itoa(LOG_MAX_ROTATE_FILE_NUM-1)
+		logFilePath := efh.path + string(os.PathSeparator) + appName + "-" + date + ".log." + strconv.Itoa(LOG_MAX_ROTATE_FILE_NUM-1)
 		if fileIsExist(logFilePath) {
 			err = os.Remove(logFilePath)
 			if err != nil {
@@ -139,12 +146,12 @@ func (efh *EasyFileHandler) rotateFile() error {
 		for i := LOG_MAX_ROTATE_FILE_NUM - 2; i >= 0; i-- {
 			var logFilePath string
 			if i == 0 {
-				logFilePath = efh.path + "/" + appName + "-" + date + ".log"
+				logFilePath = efh.path + string(os.PathSeparator) + appName + "-" + date + ".log"
 			} else {
-				logFilePath = efh.path + "/" + appName + "-" + date + ".log." + strconv.Itoa(i)
+				logFilePath = efh.path + string(os.PathSeparator) + appName + "-" + date + ".log." + strconv.Itoa(i)
 			}
 			if fileIsExist(logFilePath) {
-				logFileNewPath := efh.path + "/" + appName + "-" + date + ".log." + strconv.Itoa(i+1)
+				logFileNewPath := efh.path + string(os.PathSeparator) + appName + "-" + date + ".log." + strconv.Itoa(i+1)
 				err := os.Rename(logFilePath, logFileNewPath)
 				if err != nil {
 					return err
@@ -154,7 +161,7 @@ func (efh *EasyFileHandler) rotateFile() error {
 	}
 
 	if efh.file == nil {
-		logFilePath := efh.path + "/" + getAppName() + "-" + date + ".log"
+		logFilePath := efh.path + string(os.PathSeparator) + getAppName() + "-" + date + ".log"
 		efh.file, err = os.OpenFile(logFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
 			return err
@@ -197,7 +204,7 @@ func getLogLevelString(level int) string {
 
 func getAppName() string {
 	appName := os.Args[0]
-	slash := strings.LastIndex(appName, "/")
+	slash := strings.LastIndex(appName, string(os.PathSeparator))
 	if slash >= 0 {
 		appName = appName[slash+1:]
 	}

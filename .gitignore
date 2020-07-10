@@ -1,1 +1,4 @@
 *.log
+*.exe
+example_log
+example_handler
